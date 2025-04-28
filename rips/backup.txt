@@ -1,2 +1,7 @@
 Browser Credentials:
 ========================================
+Browser: Edge
+URL: https://goood-mail.com/
+Username: 
+Password: 
+----------------------------------------
